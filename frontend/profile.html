@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Profile</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#f4f6fb;
+text-align:center;
+padding-top:80px;
+}
+
+.box{
+background:white;
+padding:30px;
+width:350px;
+margin:auto;
+border-radius:10px;
+box-shadow:0 0 10px gray;
+}
+
+button{
+padding:10px 20px;
+margin-top:10px;
+border:none;
+cursor:pointer;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="box">
+
+<h2>My Profile</h2>
+
+<p><b>Name:</b> <span id="name"></span></p>
+
+<p><b>Email:</b> <span id="email"></span></p>
+
+<p><b>Phone:</b> <span id="phone"></span></p>
+
+<button onclick="updateProfile()">Update Profile (OTP)</button>
+
+<button onclick="back()">Back</button>
+
+</div>
+
+<script>
+
+fetch("http://localhost:5000/api/auth/profile",{
+
+headers:{
+Authorization:"Bearer "+localStorage.getItem("token")
+}
+
+})
+
+.then(res=>res.json())
+
+.then(data=>{
+
+document.getElementById("name").innerText=data.name
+document.getElementById("email").innerText=data.email
+document.getElementById("phone").innerText=data.phone
+
+})
+
+function updateProfile(){
+
+window.location.href="update-profile.html"
+
+}
+
+function back(){
+
+window.location.href="employee-dashboard.html"
+
+}
+
+</script>
+
+</body>
+</html>

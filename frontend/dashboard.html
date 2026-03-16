@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Admin Dashboard</title>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f4f6fb;
+            margin: 0;
+        }
+
+        .dashboard-header {
+            background: #34495e;
+            color: #fff;
+            padding: 24px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(44, 62, 80, 0.08);
+        }
+
+        .dashboard-header h1 {
+            margin: 0;
+            font-size: 2rem;
+            letter-spacing: 1px;
+        }
+
+        .dashboard-header button {
+            background: #e74c3c;
+            color: #fff;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .dashboard-header button:hover {
+            background: #c0392b;
+        }
+
+        .dashboard-main {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .dashboard-sidebar {
+            background: #2c3e50;
+            color: #fff;
+            width: 220px;
+            padding: 40px 0;
+            box-shadow: 2px 0 8px rgba(44, 62, 80, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .dashboard-sidebar h2 {
+            font-size: 1.2rem;
+            margin: 0 0 24px 40px;
+            letter-spacing: 1px;
+        }
+
+        .dashboard-sidebar ul {
+            list-style: none;
+            padding: 0 40px;
+            margin: 0;
+        }
+
+        .dashboard-sidebar li {
+            margin-bottom: 18px;
+            font-size: 1rem;
+        }
+
+        .dashboard-content {
+            flex: 1;
+            padding: 40px 60px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 40px;
+            justify-content: flex-start;
+        }
+
+        .block {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(44, 62, 80, 0.08);
+            padding: 32px 28px;
+            min-width: 320px;
+            max-width: 420px;
+            flex: 1 1 350px;
+        }
+
+        .block h2 {
+            margin-top: 0;
+            font-size: 1.3rem;
+            color: #34495e;
+        }
+
+        input {
+            display: block;
+            width: 100%;
+            margin-bottom: 14px;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 1rem;
+            background: #f9fafb;
+            transition: border 0.2s;
+        }
+
+        input:focus {
+            border-color: #2980b9;
+            outline: none;
+        }
+
+        button {
+            background: #2980b9;
+            color: #fff;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #1c5d8c;
+        }
+
+        table {
+            width: 100%;
+            background: #fff;
+            border-collapse: collapse;
+            margin-top: 12px;
+        }
+
+        th,
+        td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #e1e4e8;
+            text-align: left;
+        }
+
+        th {
+            background: #f4f6fb;
+            color: #34495e;
+        }
+
+        .success {
+            color: #27ae60;
+            font-weight: bold;
+        }
+    </style>
+
+</head>
+
+<body>
+
+
+    <div class="dashboard-header">
+        <h1>Admin Dashboard</h1>
+        <button onclick="logout()">Logout</button>
+    </div>
+    <div class="dashboard-main">
+        <aside class="dashboard-sidebar">
+            <h2>Navigation</h2>
+            <ul>
+                <li>Register Employee</li>
+                <li>Employee List</li>
+                <li>Attendance Validation</li>
+            </ul>
+        </aside>
+        <section class="dashboard-content">
+            <!-- Employee Registration Block -->
+            <div class="block">
+                <h2>Register Employee</h2>
+                <input id="empName" placeholder="Name" required>
+                <input id="empEmail" type="email" placeholder="Email" required>
+                <input id="empPhone" placeholder="Phone">
+                <input id="empPassword" type="password" placeholder="Password" required>
+                <button onclick="registerEmployee()">Register Employee</button>
+                <p id="userMsg"></p>
+            </div>
+            <!-- Employee List Block -->
+            <div class="block">
+                <h2>Employees</h2>
+                <table>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Actions</th>
+                    </tr>
+                    <tbody id="userTable"></tbody>
+                </table>
+            </div>
+            <!-- Attendance Validation Block -->
+            <div class="block">
+                <h2>Validate Attendance</h2>
+                <table>
+                    <tr>
+                        <th>User</th>
+                        <th>Date</th>
+                        <th>Punch In</th>
+                        <th>Punch Out</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                    <tbody id="attendanceTable"></tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <script>
+
+
+        async function loadUsers() {
+            const res = await fetch("http://localhost:5000/api/admin/users");
+            const data = await res.json();
+            let rows = "";
+            data.forEach(u => {
+                rows += `
+            <tr>
+                <td>${u.name}</td>
+                <td>${u.email}</td>
+                <td>${u.phone || ''}</td>
+                <td>
+                    <button onclick="editUser('${u._id || u.id}')">Edit</button>
+                    <button onclick="deleteUser('${u._id || u.id}')">Delete</button>
+                </td>
+            </tr>
+        `;
+            });
+            document.getElementById("userTable").innerHTML = rows;
+        }
+
+
+        async function loadAttendance() {
+            const res = await fetch("http://localhost:5000/api/admin/attendance");
+            const data = await res.json();
+            let rows = "";
+            data.forEach(a => {
+                const punchIn = a.loginTime ? new Date(a.loginTime).toLocaleTimeString() : '-';
+                const punchOut = a.logoutTime ? new Date(a.logoutTime).toLocaleTimeString() : '-';
+                // Show employee name and email if available
+                let empInfo = '-';
+                if (a.userId && typeof a.userId === 'object') {
+                    empInfo = `${a.userId.name || ''} (${a.userId.email || ''})`;
+                }
+                rows += `
+            <tr>
+                <td>${empInfo}</td>
+                <td>${a.date}</td>
+                <td>${punchIn}</td>
+                <td>${punchOut}</td>
+                <td>${a.status}</td>
+                <td>
+                    <button onclick="validateAttendance('${a._id || a.id}')">Validate</button>
+                </td>
+            </tr>
+        `;
+            });
+            document.getElementById("attendanceTable").innerHTML = rows;
+        }
+
+
+
+        function registerEmployee() {
+            const name = document.getElementById("empName").value;
+            const email = document.getElementById("empEmail").value;
+            const phone = document.getElementById("empPhone").value;
+            const password = document.getElementById("empPassword").value;
+            if (!name || !email || !password) {
+                document.getElementById("userMsg").innerText = "Name, email, and password are required.";
+                document.getElementById("userMsg").className = "";
+                return;
+            }
+            fetch("http://localhost:5000/api/auth/create", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, email, phone, password })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById("userMsg").innerText = data.message || "Employee created.";
+                    document.getElementById("userMsg").className = data.success ? "success" : "";
+                    if (data.success) {
+                        document.getElementById("empName").value = "";
+                        document.getElementById("empEmail").value = "";
+                        document.getElementById("empPhone").value = "";
+                        document.getElementById("empPassword").value = "";
+                    }
+                    loadUsers();
+                });
+        }
+
+
+        function editUser(userId) {
+            alert("Edit user feature coming soon. User ID: " + userId);
+        }
+
+
+        function deleteUser(userId) {
+            if (!confirm("Are you sure you want to delete this user?")) return;
+            fetch(`http://localhost:5000/api/admin/delete-user/${userId}`, {
+                method: "DELETE"
+            })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.message || "User deleted.");
+                    loadUsers();
+                });
+        }
+
+
+        function validateAttendance(attendanceId) {
+            alert("Validate attendance feature coming soon. Attendance ID: " + attendanceId);
+        }
+
+        function logout() {
+
+            localStorage.removeItem("adminToken");
+
+            window.location.href = "index.html";
+
+        }
+
+
+        // Initial load
+        loadUsers();
+        loadAttendance();
+
+    </script>
+
+</body>
+
+</html>

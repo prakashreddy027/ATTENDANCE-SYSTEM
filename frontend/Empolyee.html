@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Employee Login</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #f4f6fb;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .login-box {
+      background: white;
+      padding: 40px 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px gray;
+      width: 350px;
+      text-align: center;
+    }
+
+    input {
+      width: 90%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    button {
+      padding: 10px 20px;
+      background: #34495e;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+      width: 100%;
+    }
+
+    #msg {
+      color: #e74c3c;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="login-box">
+    <h2>Employee Login</h2>
+    <input id="email" type="email" placeholder="Email" required>
+    <input id="password" type="password" placeholder="Password" required>
+    <button onclick="login()">Login</button>
+    <p id="msg"></p>
+  </div>
+  <script>
+    async function login() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const res = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+      if (data.success) {
+        document.getElementById("msg").style.color = "green";
+        document.getElementById("msg").innerText = "Login successful!";
+        // Save token if provided and redirect to dashboard
+        if (data.token) {
+          localStorage.setItem("token", data.token);
+        }
+        // Redirect to employee dashboard after successful login
+        window.location.href = "employee-dashboard.html";
+      } else {
+        document.getElementById("msg").style.color = "#e74c3c";
+        document.getElementById("msg").innerText = data.message || "Login failed.";
+      }
+    }
+  </script>
+</body>
+
+</html>

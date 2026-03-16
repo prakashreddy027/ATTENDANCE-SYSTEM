@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin Login</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: #34495e;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.container {
+  background: white;
+  padding: 30px;
+  width: 350px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+}
+
+button {
+  width: 100%;
+  padding: 10px;
+  background: #e67e22;
+  color: white;
+  border: none;
+}
+</style>
+
+</head>
+<body>
+<div class="container">
+  <h2>Admin Login</h2>
+  <input id="email" placeholder="Admin Email">
+  <input id="otp" placeholder="Enter OTP" style="display:none;">
+  <button id="sendOtpBtn" onclick="sendOtp()">Send OTP</button>
+  <button id="loginBtn" onclick="login()" style="display:none;">Login</button>
+  <p id="msg"></p>
+</div>
+
+<script>
+async function sendOtp() {
+  const email = document.getElementById("email").value;
+  const res = await fetch("http://localhost:5000/api/admin/send-otp", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email })
+  });
+
+  if (res.status === 200) {
+    document.getElementById("otp").style.display = "block";
+    document.getElementById("sendOtpBtn").style.display = "none";
+    document.getElementById("loginBtn").style.display = "block";
+    document.getElementById("msg").innerText = "OTP sent to your email.";
+  } else {
+    const data = await res.json();
+    document.getElementById("msg").innerText = data.message;
+  }
+}
+
+async function login() {
+  const email = document.getElementById("email").value;
+  const otp = document.getElementById("otp").value;
+
+  const res = await fetch("http://localhost:5000/api/admin/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, otp })
+  });
+
+  const data = await res.json();
+
+  if (res.status === 200) {
+    localStorage.setItem("adminToken", data.token);
+    window.location.href = "dashboard.html";
+  } else {
+    document.getElementById("msg").innerText = data.message;
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>User Login</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            padding: 35px;
+            width: 350px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #3498db;
+            color: white;
+            border: none;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h2>User Login</h2>
+
+        <input id="email" placeholder="Email / Phone">
+        <input id="password" type="password" placeholder="Password" style="display:none;">
+        <input id="otp" placeholder="Enter OTP" style="display:none;">
+
+        <button id="sendOtpBtn" onclick="sendOtp()">Send OTP</button>
+        <button id="loginWithPasswordBtn" onclick="loginWithPassword()" style="display:none;">Login with
+            Password</button>
+        <button id="loginWithOtpBtn" onclick="loginWithOtp()" style="display:none;">Login with OTP</button>
+
+        <p id="msg"></p>
+
+    </div>
+
+    <script>
+
+        async function sendOtp() {
+            const email = document.getElementById("email").value;
+            const res = await fetch("http://localhost:5000/api/auth/send-otp", { // Updated endpoint
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email })
+            });
+
+            if (res.status === 200) {
+                document.getElementById("otp").style.display = "block";
+                document.getElementById("sendOtpBtn").style.display = "none";
+                document.getElementById("loginWithOtpBtn").style.display = "block";
+                document.getElementById("msg").innerText = "OTP sent to your email/phone.";
+            } else {
+                const data = await res.json();
+                document.getElementById("msg").innerText = data.message;
+            }
+        }
+
+        async function loginWithPassword() {
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            const res = await fetch("http://localhost:5000/api/user/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await res.json();
+            if (res.status === 200) {
+                localStorage.setItem("token", data.token);
+                window.location.href = "Empolyee.html";
+            } else {
+                document.getElementById("msg").innerText = data.message;
+            }
+        }
+
+        async function loginWithOtp() {
+            const email = document.getElementById("email").value;
+            const otp = document.getElementById("otp").value;
+            const res = await fetch("http://localhost:5000/api/user/login-otp", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, otp })
+            });
+
+            const data = await res.json();
+            if (res.status === 200) {
+                localStorage.setItem("token", data.token);
+                window.location.href = "Empolyee.html";
+            } else {
+                document.getElementById("msg").innerText = data.message;
+            }
+        }
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const otp = document.getElementById('otp').value;
+
+            const response = await fetch('/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password, otp })
+            });
+
+            const result = await response.json();
+            alert(result.message);
+        });
+
+    </script>
+
+</body>
+
+</html>

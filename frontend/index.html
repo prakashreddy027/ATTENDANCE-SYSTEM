@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Attendance System</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #f4f6fb;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .box {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px gray;
+            text-align: center;
+        }
+
+        button {
+            padding: 12px 25px;
+            margin: 10px;
+            border: none;
+            background: #3498db;
+            color: white;
+            cursor: pointer;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="box">
+
+        <h2>Attendance System</h2>
+
+        <button onclick="adminLogin()">Admin Login</button>
+
+        <button onclick="employeeLogin()">Employee Login</button>
+
+    </div>
+
+    <script>
+
+        function adminLogin() {
+            window.location.href = "adminlogin.html"
+        }
+
+        function employeeLogin() {
+            window.location.href = "employeelogin.html"
+        }
+
+    </script>
+
+</body>
+
+</html>

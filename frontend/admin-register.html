@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Admin Registration & User Management</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #f4f6fb;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        .nav {
+            background: #2c3e50;
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 40px;
+            justify-content: center;
+            padding: 40px 0;
+        }
+
+        .block {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px #ccc;
+            padding: 30px 25px;
+            min-width: 320px;
+            max-width: 400px;
+            flex: 1 1 350px;
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+
+        input {
+            width: 95%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #2c3e50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        table {
+            width: 100%;
+            background: white;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        #msg,
+        #userMsg {
+            color: #e74c3c;
+            margin-top: 10px;
+        }
+
+        .success {
+            color: #27ae60 !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="nav">
+        <h3>Admin Panel</h3>
+        <button onclick="logout()">Logout</button>
+    </div>
+    <div class="container">
+        <!-- Admin Registration Block -->
+        <div class="block">
+            <h2>Register Admin</h2>
+            <input id="adminName" placeholder="Name" required>
+            <input id="adminEmail" type="email" placeholder="Email" required>
+            <input id="adminPassword" type="password" placeholder="Password" required>
+            <button onclick="registerAdmin()">Register Admin</button>
+            <p id="msg"></p>
+        </div>
+        <!-- User Management Block -->
+        <div class="block">
+            <h2>Employees</h2>
+            <button onclick="addUser()">Add Employee</button>
+            <p id="userMsg"></p>
+            <table>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                </tr>
+                <tbody id="userTable"></tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+        async function registerAdmin() {
+            const name = document.getElementById("adminName").value;
+            const email = document.getElementById("adminEmail").value;
+            const password = document.getElementById("adminPassword").value;
+            if (!name || !email || !password) {
+                document.getElementById("msg").innerText = "All fields are required.";
+                return;
+            }
+            const res = await fetch("http://localhost:5000/api/admin/create-admin", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, email, password })
+            });
+            const data = await res.json();
+            if (res.ok && data.message) {
+                document.getElementById("msg").innerText = data.message;
+                document.getElementById("msg").className = "success";
+            } else {
+                document.getElementById("msg").innerText = data.message || "Registration failed.";
+                document.getElementById("msg").className = "";
+            }
+        }
+        async function loadUsers() {
+            const res = await fetch("http://localhost:5000/api/admin/users");
+            const data = await res.json();
+            let rows = "";
+            data.forEach(u => {
+                rows += `
+          <tr>
+            <td>${u.name}</td>
+            <td>${u.email}</td>
+            <td>${u.phone || ''}</td>
+          </tr>
+        `;
+            });
+            document.getElementById("userTable").innerHTML = rows;
+        }
+        function addUser() {
+            const name = prompt("Enter employee name:");
+            const email = prompt("Enter employee email:");
+            const phone = prompt("Enter employee phone:");
+            const password = prompt("Enter employee password:");
+            if (!name || !email || !password) return alert("Name, email, and password are required.");
+            fetch("http://localhost:5000/api/auth/create", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, email, phone, password })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById("userMsg").innerText = data.message || "Employee created.";
+                    document.getElementById("userMsg").className = data.success ? "success" : "";
+                    loadUsers();
+                });
+        }
+        function logout() {
+            localStorage.removeItem("adminToken");
+            window.location.href = "index.html";
+        }
+        loadUsers();
+    </script>
+</body>
+
+</html>
